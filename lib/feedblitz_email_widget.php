@@ -35,14 +35,15 @@ parent::WP_Widget(
 
   function widget($args, $instance) {
     extract( $args );
-  	$title = apply_filters('widget_title', $instance['title']);	
-	$text = $instance['text'];
-    $feed_id = $instance['feed_id']?$instance['feed_id']:get_option('FEEDID') ;
-	$publisher_id = $instance['publisher_id']?$instance['publisher_id']:get_option('PUBLISHER');
-	$instructions = $instance['instructions'];
-	$intro_text = $instance['intro_text'];
-	$submit = $instance['submit']?$instance['submit']:'Subscribe';
-	$outro_text = $instance['outro_text'];	
+	$title            = apply_filters('widget_title', $instance['title']);	
+	$text             = $instance['text'];
+	$feed_id          = $instance['feed_id']?$instance['feed_id']:get_option('FEEDID') ;
+	$publisher_id     = $instance['publisher_id']?$instance['publisher_id']:get_option('PUBLISHER');
+	$instructions     = $instance['instructions'];
+	$intro_text       = $instance['intro_text'];
+	$submit           = $instance['submit']?$instance['submit']:'Subscribe';
+	$outro_text       = $instance['outro_text'];	
+	$json['site_url'] = get_bloginfo('url');
     echo $before_widget;
 	
 	/*	checks if feed id and publisher id are configured ,display the form if configured properly, else returns error message*/
@@ -51,8 +52,28 @@ parent::WP_Widget(
 ?>
   
   
-  
-  <form name="feedblitzform"  method="POST" target='popupwindow' action="<?php echo FEEDBLITZ_MAILVERIFY_URL; ?>&ajax=4#0"  onsubmit="window.open('<?php echo FEEDBLITZ_MAILVERIFY_URL; ?>&ajax=4#0', 'popupwindow', 'scrollbars=yes,width=550,height=520');return true" _lpchecked="1">
+  <script>
+  	var default_setting = <?php echo json_encode($json); ?>;
+  	function openWindowSubscribe()
+  	{  		
+  		window.subscribeWindow = window.open('<?php echo FEEDBLITZ_MAILVERIFY_URL; ?>&ajax=4#0', 'popupwindow', 'scrollbars=yes,width=550,height=520');
+  	}
+
+  	function checkWin()
+  	{
+  		if (window.subscribeWindow)
+  		{
+  			if (!window.subscribeWindow || window.subscribeWindow.closed)
+  			{
+  				window.subscribeWindow = false;  				
+  				window.location = default_setting.site_url + '/thankyou';
+  			}
+  		}
+  	}
+  	window.setInterval("checkWin()",3*1000);  	
+  </script>
+
+  <form name="feedblitzform"  method="POST" target='popupwindow' action="<?php echo FEEDBLITZ_MAILVERIFY_URL; ?>&ajax=4#0"  onsubmit="openWindowSubscribe(); return true" _lpchecked="1">
  <p class="sub_instruct"><?php echo $instructions; ?></p>
  <p class="sub_instruct"><?php echo $intro_text; ?></p>
  <p class="feedblitz-email-subscription"> <input style="display:none" name="EMAIL" maxlength="64" type="text"  value="<?php echo $text; ?>" onblur="if(this.value == '') { this.value='<?php echo $text; ?>'}" onfocus="if (this.value == '<?php echo $text; ?>') {this.value=''}">
